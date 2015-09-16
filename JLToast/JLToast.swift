@@ -26,19 +26,10 @@ public struct JLToastDelay {
 
 @objc public class JLToast: NSOperation {
 
-    public var view: JLToastView = JLToastView()
-    
-    public var text: String? {
-        get {
-            return self.view.textLabel.text
-        }
-        set {
-            self.view.textLabel.text = newValue
-        }
-    }
+    public var view: JLToastViewProtocol = JLToastView()
 
     public var delay: NSTimeInterval = 0
-    public var duration: NSTimeInterval = JLToastDelay.ShortDelay
+    public var duration: NSTimeInterval = JLToastDelay.LongDelay
 
     private var _executing = false
     override public var executing: Bool {
@@ -67,33 +58,20 @@ public struct JLToastDelay {
     internal var window: UIWindow {
         for window in UIApplication.sharedApplication().windows {
             if NSStringFromClass(window.dynamicType) == "UITextEffectsWindow" {
-                return window
+                return window as! UIWindow
             }
         }
-        return UIApplication.sharedApplication().windows.first!
+        return UIApplication.sharedApplication().windows.first as! UIWindow
     }
-    
-    
-    public class func makeText(text: String) -> JLToast {
-        return JLToast.makeText(text, delay: 0, duration: JLToastDelay.ShortDelay)
+
+    public init(view: JLToastViewProtocol) {
+        self.view = view
     }
-    
-    public class func makeText(text: String, duration: NSTimeInterval) -> JLToast {
-        return JLToast.makeText(text, delay: 0, duration: duration)
-    }
-    
-    public class func makeText(text: String, delay: NSTimeInterval, duration: NSTimeInterval) -> JLToast {
-        let toast = JLToast()
-        toast.text = text
-        toast.delay = delay
-        toast.duration = duration
-        return toast
-    }
-    
+
     public func show() {
         JLToastCenter.defaultCenter().addToast(self)
     }
-    
+
     override public func start() {
         if !NSThread.isMainThread() {
             dispatch_async(dispatch_get_main_queue(), {
@@ -109,33 +87,26 @@ public struct JLToastDelay {
 
         dispatch_async(dispatch_get_main_queue(), {
             self.view.updateView()
-            self.view.alpha = 0
-            self.window.addSubview(self.view)
+            self.window.addSubview(self.view as! UIView)
             UIView.animateWithDuration(
                 0.5,
                 delay: self.delay,
                 options: .BeginFromCurrentState,
                 animations: {
-                    self.view.alpha = 1
+                    self.view.view.frame.origin.y -= self.view.view.frame.height
                 },
                 completion: { completed in
-                    UIView.animateWithDuration(
-                        self.duration,
-                        animations: {
-                            self.view.alpha = 1.0001
-                        },
-                        completion: { completed in
-                            self.finish()
-                            UIView.animateWithDuration(0.5, animations: {
-                                self.view.alpha = 0
-                            })
-                        }
-                    )
+
+                    UIView.animateWithDuration(0.2, delay: self.duration, options: .allZeros, animations: {
+                        self.view.view.frame.origin.y += self.view.view.frame.height
+                    }, completion: { completed in
+                        self.finish()
+                    })
                 }
             )
         })
     }
-    
+
     public func finish() {
         self.executing = false
         self.finished = true
