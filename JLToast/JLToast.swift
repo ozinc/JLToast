@@ -55,6 +55,10 @@ public struct JLToastDelay {
         }
     }
 
+    override public var asynchronous: Bool {
+        return true
+    }
+
     internal var window: UIWindow {
         for window in UIApplication.sharedApplication().windows {
             if NSStringFromClass(window.dynamicType) == "UITextEffectsWindow" {
@@ -73,39 +77,28 @@ public struct JLToastDelay {
     }
 
     override public func start() {
-        if !NSThread.isMainThread() {
-            dispatch_async(dispatch_get_main_queue(), {
-                self.start()
-            })
-        } else {
-            super.start()
-        }
-    }
-
-    override public func main() {
         self.executing = true
-
-        dispatch_async(dispatch_get_main_queue(), {
+        dispatch_async(dispatch_get_main_queue(), { [unowned self] () in
             self.view.updateView()
             self.window.addSubview(self.view as! UIView)
             UIView.animateWithDuration(
                 0.5,
                 delay: self.delay,
                 options: .BeginFromCurrentState,
-                animations: {
+                animations: { [unowned self] () in
                     self.view.view.frame.origin.y -= self.view.view.frame.height
                 },
-                completion: { completed in
+                completion: { [unowned self] (completed) in
 
-                    UIView.animateWithDuration(0.2, delay: self.duration, options: .allZeros, animations: {
+                    UIView.animateWithDuration(0.2, delay: self.duration, options: .allZeros, animations: { [unowned self] () in
                         self.view.view.frame.origin.y += self.view.view.frame.height
-                    }, completion: { completed in
-                        self.view.view.removeFromSuperview()
-                        self.finish()
-                    })
+                        }, completion: { [unowned self] (completed) in
+                            self.view.view.removeFromSuperview()
+                            self.finish()
+                        })
                 }
             )
-        })
+            })
     }
 
     public func finish() {
