@@ -100,6 +100,7 @@ public struct JLToastDelay {
                     UIView.animateWithDuration(0.2, delay: self.duration, options: .allZeros, animations: {
                         self.view.view.frame.origin.y += self.view.view.frame.height
                     }, completion: { completed in
+                        self.view.view.removeFromSuperview()
                         self.finish()
                     })
                 }
