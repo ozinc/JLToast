@@ -62,10 +62,10 @@ public struct JLToastDelay {
     internal var window: UIWindow {
         for window in UIApplication.sharedApplication().windows {
             if NSStringFromClass(window.dynamicType) == "UITextEffectsWindow" {
-                return window as! UIWindow
+                return window
             }
         }
-        return UIApplication.sharedApplication().windows.first as! UIWindow
+        return UIApplication.sharedApplication().windows.first
     }
 
     public init(view: JLToastViewProtocol) {
@@ -90,7 +90,7 @@ public struct JLToastDelay {
                 },
                 completion: { [unowned self] (completed) in
 
-                    UIView.animateWithDuration(0.2, delay: self.duration, options: .allZeros, animations: { [unowned self] () in
+                    UIView.animateWithDuration(0.2, delay: self.duration, options: nil, animations: { [unowned self] () in
                         self.view.view.frame.origin.y += self.view.view.frame.height
                         }, completion: { [unowned self] (completed) in
                             self.view.view.removeFromSuperview()
