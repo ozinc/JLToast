@@ -65,7 +65,7 @@ public struct JLToastDelay {
                 return window
             }
         }
-        return UIApplication.sharedApplication().windows.first
+        return UIApplication.sharedApplication().windows.first!
     }
 
     public init(view: JLToastViewProtocol) {
@@ -89,8 +89,7 @@ public struct JLToastDelay {
                     self.view.view.frame.origin.y -= self.view.view.frame.height
                 },
                 completion: { [unowned self] (completed) in
-
-                    UIView.animateWithDuration(0.2, delay: self.duration, options: nil, animations: { [unowned self] () in
+                    UIView.animateWithDuration(0.2, delay: self.duration, options: .CurveEaseIn, animations: { [unowned self] () in
                         self.view.view.frame.origin.y += self.view.view.frame.height
                         }, completion: { [unowned self] (completed) in
                             self.view.view.removeFromSuperview()
